@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="This website is develop for identify the safety of url."
+    />
+    <meta
+      name="keywords"
+      content="phishing url,phishing,cyber security,machine learning,classifier,python"
+    />
+    <meta name="author" content="Pritish Kumar Sahoo" />
+
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+      integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+      crossorigin="anonymous"
+    />
+    <link
+      href="{{ url_for('static', filename='styles.css') }}"
+      rel="stylesheet"
+    />
+
+    <title>URL detection</title>
+  </head>
+
+  <body>
+    <div class="container">
+      {% if alert_message %}
+      <div id="message-alert" class="alert-box {{ alert_class }}">
+        {{ alert_message }}
+      </div>
+      {% endif %}
+
+      <div class="row">
+        <div class="form col-md" id="form1">
+          <h2>PHISHING URL DETECTION</h2>
+
+          <br />
+          <form action="/" method="post" id="check-form">
+            <input
+              type="text"
+              class="form__input"
+              name="url"
+              id="url"
+              placeholder="Enter URL"
+              required
+            />
+            <label for="url" class="form__label">URL</label>
+            <button class="button" role="button">Check here</button>
+          </form>
+        </div>
+
+        <div class="col-md" id="form2">
+          <br />
+          {% if url %}
+          <h6 class="right">
+            <a href="{{ url }}" target="_blank">{{ url }}</a>
+          </h6>
+          {% endif %}
+
+          <br />
+          <h3 id="prediction"></h3>
+
+          <button
+            class="button2"
+            id="button2"
+            role="button"
+            onclick="window.open('{{url}}')"
+            target="_blank"
+            style="display: none"
+          >
+            Still want to Continue
+          </button>
+          <button
+            class="button1"
+            id="button1"
+            role="button"
+            onclick="window.open('{{url}}')"
+            target="_blank"
+            style="display: none"
+          >
+            Continue
+          </button>
+
+          <div id="feedback-form" style="display: none; margin-top: 1rem">
+            <h5>Was this prediction correct?</h5>
+            <form method="post" action="/feedback">
+              <input type="hidden" name="url" value="{{ url }}" />
+              <input type="hidden" name="score" value="{{ xx }}" />
+              <button
+                type="submit"
+                name="feedback"
+                value="safe"
+                class="btn btn-success btn-sm"
+              >
+                Report Safe
+              </button>
+              <button
+                type="submit"
+                name="feedback"
+                value="phish"
+                class="btn btn-danger btn-sm"
+              >
+                Report Phish
+              </button>
+            </form>
+          </div>
+
+          <div id="why-flagged-sentence" style="margin-top: 1rem">
+            {% if explain and explain.heuristic %}
+            <div class="explain-card">
+              <h5 style="margin: 0 0 8px 0">Why this score?</h5>
+
+              {# Build a short sentence based on the heuristic #} {% set h =
+              explain.heuristic %} {% set d = explain.details or {} %} {% if h
+              == 'very_old_redirects' or h == 'redirect_chain' %}
+              <p class="explain-sentence">
+                This URL was flagged because it follows a long redirect chain {%
+                if d.hops is defined %}of {{ d.hops }} hops{% endif %}.
+              </p>
+
+              {% elif h == 'very_old_path_entropy' or h == 'path_entropy' %}
+              <p class="explain-sentence">
+                This URL looks suspicious due to a highly random path (entropy
+                {% if d.path_entropy is defined %}≈ {{
+                '%.2f'|format(d.path_entropy) }}{% endif %}).
+              </p>
+
+              {% elif h == 'very_old_ssl_age_fail' or h == 'ssl_age' %}
+              <p class="explain-sentence">
+                The SSL certificate for this host is new or invalid {% if
+                d.cert_age_days is defined %}(age {{ d.cert_age_days }} days){%
+                endif %}, which reduces trust.
+              </p>
+
+              {% elif h == 'whois_ip_mismatch' %}
+              <p class="explain-sentence">
+                The domain's WHOIS registrant/registrar does not match the IP
+                owner(s) {% if d.ip_owners %}(owners: {{ d.ip_owners|join(', ')
+                }}){% endif %}; this is suspicious for a young domain.
+              </p>
+
+              {% elif h == 'brand_in_path_query' or h == 'brand_in_path_query'
+              %}
+              <p class="explain-sentence">
+                The URL references a well-known brand in its path or query
+                (possible impersonation).
+              </p>
+
+              {% elif h == 'ml_phish_confident' or h == 'ml_predict_phish' %}
+              <p class="explain-sentence">
+                The machine-learning model assigned a high phishing probability
+                {% if d.model_phish_prob is defined %}(phishing probability ≈ {{
+                '%.0f'|format(d.model_phish_prob * 100) }}%){% endif %}.
+              </p>
+
+              {% elif h == 'trusted_tld' %}
+              <p class="explain-sentence">
+                The domain uses a trusted top-level domain
+                (government/education/military), which increases its trust
+                score.
+              </p>
+
+              {% elif h == 'fallback_old_trust' or h == 'very_old_trust' %}
+              <p class="explain-sentence">
+                This is a long-established domain (older domains are typically
+                more trustworthy).
+              </p>
+
+              {% else %}
+              <p class="explain-sentence">
+                Decision based on rule: <strong>{{ h }}</strong>. {% if d %}
+                Evidence: {% for k, v in d.items() %}{{ k }}={{ v }}{% if not
+                loop.last %}, {% endif %}{% endfor %}. {% endif %}
+              </p>
+              {% endif %}
+            </div>
+            {% else %}
+            <div class="explain-card">
+              <h5 style="margin: 0 0 8px 0">Why this score?</h5>
+              <p class="explain-sentence">
+                Submit a URL to see a clear, one-sentence explanation of why it
+                was flagged.
+              </p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const box = document.getElementById("message-alert");
+          if (!box) return;
+
+          box.classList.add("show");
+          // Auto-hide after 2s
+          setTimeout(() => box.classList.remove("show"), 2000);
+
+          const form = document.getElementById("check-form");
+          form &&
+            form.addEventListener("submit", () => {
+              box.classList.remove("show");
+            });
+        });
+      </script>
+
+      <div class="text-center mt-4">
+        <button id="toggleCacheBtn" class="btn btn-info mb-3" type="button">
+          WHOIS Cache <span id="cacheArrow">▼</span>
+        </button>
+
+        <pre id="cacheCollapse"></pre>
+      </div>
+
+      <br />
+      <footer class="text-center mt-4">
+        <p>©2026 MAYA</p>
+      </footer>
+    </div>
+
+    <script
+      src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+      integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+      crossorigin="anonymous"
+    ></script>
+
+    <script>
+      let x = "{{xx}}";
+      if (x !== "-1") {
+        let score = parseFloat(x);
+        let pct = (score * 100).toFixed(2);
+
+        if (score >= 0.5) {
+          document.getElementById("prediction").innerText =
+            `This website is ${pct}% safe to use.`;
+          document.getElementById("prediction").style.color = "#28a745";
+          document.getElementById("button1").style.display = "inline-block";
+        } else {
+          let unsafePct = (100 - pct).toFixed(2);
+          document.getElementById("prediction").innerText =
+            `This website is ${unsafePct}% unsafe to use!`;
+          document.getElementById("prediction").style.color = "#dc3545";
+          document.getElementById("button2").style.display = "inline-block";
+        }
+
+        document.getElementById("feedback-form").style.display = "block";
+      }
+
+      const cacheBtn = document.getElementById("toggleCacheBtn");
+      const cachePane = document.getElementById("cacheCollapse");
+      const cacheArrow = document.getElementById("cacheArrow");
+
+      cacheBtn.addEventListener("click", () => {
+        const isOpen = cachePane.classList.toggle("expanded");
+
+        if (isOpen) {
+          cacheArrow.textContent = "▲";
+          cachePane.textContent = "Loading…";
+          fetch("/cache/whois")
+            .then((res) => res.json())
+            .then((data) => {
+              cachePane.textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(() => {
+              cachePane.textContent = "Error loading cache";
+            });
+        } else {
+          cacheArrow.textContent = "▼";
+          cachePane.textContent = "";
+        }
+      });
+
+      // ✅ Slide-down error box logic
+      document.addEventListener("DOMContentLoaded", () => {
+        const alertBox = document.getElementById("error-alert");
+        const form = document.getElementById("check-form");
+
+        if (alertBox) {
+          alertBox.classList.add("show");
+          setTimeout(() => alertBox.classList.remove("show"), 2000);
+        }
+
+        form.addEventListener("submit", () => {
+          if (alertBox) alertBox.classList.remove("show");
+        });
+      });
+    </script>
+  </body>
+</html>
