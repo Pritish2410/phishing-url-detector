@@ -43,13 +43,14 @@
           <br />
           <form action="/" method="post" id="check-form">
             <input
-              type="text"
-              class="form__input"
-              name="url"
-              id="url"
-              placeholder="Enter URL"
-              required
-            />
+            type="text"
+            class="form__input"
+            name="url"
+            id="url"
+            placeholder="Enter URL"
+            value="{{ url if url else '' }}"
+            required
+          />
             <label for="url" class="form__label">URL</label>
             <button class="button" role="button">Check here</button>
           </form>

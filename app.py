@@ -797,11 +797,8 @@ def index():
             alert_message = None
             alert_class = None
 
-    url = None
-    score = -1
-    if request.method == "POST":
-        url = request.form.get("url")
-        score = run_definitive_analysis(url)
+    url = request.form.get("url") or request.args.get("url")
+    score = run_definitive_analysis(url) if url else -1
 
     return render_template(
         "index.html",
