@@ -14,6 +14,7 @@ from flask import (
     url_for,
     jsonify
 )
+from flask_cors import CORS
 import numpy as np
 import pickle
 from urllib.parse import urlparse
@@ -32,6 +33,7 @@ from difflib import SequenceMatcher
 from feature import FeatureExtraction
 
 app = Flask(__name__)
+CORS(app)
 
 # Config (tunable via environment variables)
 REDIRECT_HOP_THRESHOLD = int(os.getenv("REDIRECT_HOP_THRESHOLD", "4"))
