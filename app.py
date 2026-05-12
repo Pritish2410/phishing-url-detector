@@ -33,7 +33,7 @@ from difflib import SequenceMatcher
 from feature import FeatureExtraction
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Config (tunable via environment variables)
 REDIRECT_HOP_THRESHOLD = int(os.getenv("REDIRECT_HOP_THRESHOLD", "4"))
