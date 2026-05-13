@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        body { 
+            width: 320px; 
+            font-family: 'Inter', sans-serif; 
+            /* Swapped solid color for a deep, moody radial gradient */
+            background: radial-gradient(circle at top left, #1a2235 0%, #0B0F19 100%); 
+            color: #ffffff; 
+            margin: 0; 
+            padding: 20px; 
+            text-align: center; 
+        }
+        
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 16px; 
+            padding: 24px 20px; 
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        h3 { 
+            margin: 0 0 15px 0; 
+            font-weight: 900; 
+            font-size: 18px; 
+            letter-spacing: 1px; 
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%); 
+            background-clip: text;
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+
+        #urlDisplay { 
+            font-size: 11px; 
+            color: #8B949E; 
+            background: rgba(0, 0, 0, 0.4); 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            word-wrap: break-word; 
+            border: 1px solid rgba(255, 255, 255, 0.03); 
+            font-family: monospace;
+        }
+
+        #result { 
+            font-size: 18px; 
+            font-weight: 800; 
+            padding: 15px; 
+            border-radius: 12px; 
+            transition: all 0.4s ease; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+        }
+
+        .scanning { 
+            color: #F1C40F; 
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.4); 
+            animation: pulse 1.5s infinite; 
+        }
+
+        .safe { 
+            color: #2ECC71; 
+            background: rgba(46, 204, 113, 0.1); 
+            border: 1px solid rgba(46, 204, 113, 0.3); 
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.15); 
+        }
+
+        .phishing { 
+            color: #FF416C; 
+            background: rgba(255, 65, 108, 0.1); 
+            border: 1px solid rgba(255, 65, 108, 0.3); 
+            box-shadow: 0 0 25px rgba(255, 65, 108, 0.2); 
+            animation: glitch 0.4s cubic-bezier(.25, .46, .45, .94) both infinite;
+        }
+
+        #reportBtn { 
+            margin-top: 20px; 
+            padding: 14px; 
+            width: 100%; 
+            border: none; 
+            border-radius: 8px; 
+            background: linear-gradient(135deg, #0061ff 0%, #60efff 100%); 
+            color: #000; 
+            font-weight: 900; 
+            cursor: pointer; 
+            display: none; 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            text-transform: uppercase; 
+            font-size: 12px; 
+            letter-spacing: 1px; 
+        }
+
+        #reportBtn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(0, 97, 255, 0.4); 
+        }
+
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 1px) }
+            40% { transform: translate(-1px, -1px) }
+            60% { transform: translate(2px, 1px) }
+            80% { transform: translate(1px, -1px) }
+            100% { transform: translate(0) }
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-card">
+        <h3>MAYA SECURE</h3>
+        <div id="urlDisplay">Fetching URL...</div>
+        <div id="result" class="scanning">Analyzing...</div>
+        <button id="reportBtn">View Full Report</button>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>
