@@ -47,8 +47,8 @@ REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "5"))
 COUNT_REDIRECTS_MAX_HOPS = int(os.getenv("COUNT_REDIRECTS_MAX_HOPS", "20"))
 
 # Trust / ML thresholds (tunable)
-TRUSTED_ISSUERS = os.getenv("TRUSTED_ISSUERS", "Let's Encrypt,Amazon,Cloudflare,Google").split(",")
-TRUSTED_ISSUERS = [t.strip().lower() for t in TRUSTED_ISSUERS if t.strip()]
+TRUSTED_ISSUERS = os.getenv("TRUSTED_ISSUERS", "let's encrypt,amazon,cloudflare,google,gts,us google trust services").lower().split(",")
+TRUSTED_ISSUERS = [t.strip() for t in TRUSTED_ISSUERS if t.strip()]
 
 ML_PHISH_CONF_THRESHOLD = float(os.getenv("ML_PHISH_CONF_THRESHOLD", "0.70"))
 ML_CONFIDENCE_GAP = float(os.getenv("ML_CONFIDENCE_GAP", "0.10"))
@@ -659,7 +659,7 @@ def run_definitive_analysis(url):
 
     
     flag_ssl_age = False
-    if cert_age >= 0 and cert_age < SSL_AGE_DAYS_THRESHOLD:
+    if cert_age >= 0 and cert_age < SSL_AGE_DAYS_THRESHOLD and not issuer_trusted:
         if domain_age_days is None or domain_age_days < (VERY_OLD_DOMAIN_YEARS * 365):
             flag_ssl_age = True
 
